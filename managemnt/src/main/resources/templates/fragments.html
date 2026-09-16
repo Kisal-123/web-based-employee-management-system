@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+
+<!-- THE SIDEBAR FRAGMENT -->
+<div th:fragment="sidebar">
+
+    <!-- 1. Load FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- 2. Sidebar Styling -->
+    <style>
+        :root {
+            --sidebar-width-expanded: 260px;
+            --sidebar-width-collapsed: 80px;
+            --sidebar-bg: #111827; /* Dark theme matching your screenshot */
+            --sidebar-hover: #1f2937;
+            --text-color: #d1d5db;
+        }
+
+        body {
+            /* Smoothly animate the main page body when the sidebar shrinks */
+            transition: margin-left 0.3s ease;
+        }
+
+        .custom-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width-expanded);
+            background-color: var(--sidebar-bg);
+            color: var(--text-color);
+            transition: width 0.3s ease;
+            overflow-x: hidden;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+
+        /* When the sidebar has the 'collapsed' class, it shrinks */
+        .custom-sidebar.collapsed {
+            width: var(--sidebar-width-collapsed);
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--sidebar-hover);
+            white-space: nowrap;
+        }
+
+        /* Hide the title text when collapsed */
+        .custom-sidebar.collapsed .brand-text {
+            display: none;
+        }
+
+        .toggle-btn {
+            cursor: pointer;
+            color: var(--text-color);
+            font-size: 20px;
+            transition: color 0.2s;
+            margin-left: auto;
+        }
+        .toggle-btn:hover { color: #ffffff; }
+        .custom-sidebar.collapsed .toggle-btn { margin: 0 auto; } /* Center icon when closed */
+
+        .nav-menu {
+            list-style: none;
+            padding: 15px 0;
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        .nav-menu li { margin-bottom: 5px; }
+
+        .nav-menu a, .logout-btn {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+            background: none;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .nav-menu a:hover, .logout-btn:hover {
+            background-color: var(--sidebar-hover);
+            color: #ffffff;
+            border-left: 4px solid #3b82f6; /* Blue highlight line on hover */
+            padding-left: 16px;
+        }
+
+        /* The Icons */
+        .nav-menu i {
+            min-width: 40px; /* Forces all icons to line up perfectly */
+            font-size: 20px;
+            text-align: center;
+        }
+
+        /* Hide link text when collapsed */
+        .custom-sidebar.collapsed .nav-text {
+            display: none;
+        }
+    </style>
+
+    <!-- 3. Sidebar HTML Structure -->
+    <div id="main-sidebar" class="custom-sidebar">
+        <div class="sidebar-header">
+            <span class="brand-text" style="font-weight: bold; font-size: 18px; color: white;">SmartStaffPro</span>
+            <i class="fas fa-bars toggle-btn" onclick="toggleSidebar()" title="Toggle Menu"></i>
+        </div>
+
+        <ul class="nav-menu">
+            <!-- Universal Dashboard -->
+            <li>
+                <a href="/">
+                    <i class="fas fa-border-all"></i>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+            </li>
+
+            <!-- HR Manager -->
+            <li sec:authorize="hasRole('HR_MANAGER')">
+                <a href="/employees">
+                    <i class="fas fa-user-tie"></i>
+                    <span class="nav-text">Employee Directory</span>
+                </a>
+            </li>
+
+            <li sec:authorize="hasRole('HR_MANAGER')">
+                <a href="/performance">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="nav-text">Performance Appraisals</span>
+                </a>
+            </li>
+            <li sec:authorize="hasRole('HR_MANAGER')">
+                <a href="/settings">
+                    <i class="fas fa-sliders-h"></i>
+                    <span class="nav-text">System Settings</span>
+                </a>
+            </li>
+
+            <!-- Operations Manager -->
+            <li sec:authorize="hasRole('OPERATIONS_MANAGER')">
+                <a href="/leave/manage">
+                    <i class="fas fa-calendar-check"></i>
+                    <span class="nav-text">Leave Approvals</span>
+                </a>
+            </li>
+            <li sec:authorize="hasRole('OPERATIONS_MANAGER')">
+                <a href="/attendance">
+                    <i class="fas fa-clock"></i>
+                    <span class="nav-text">Attendance Logs</span>
+                </a>
+            </li>
+            <li sec:authorize="hasRole('OPERATIONS_MANAGER')">
+                <a href="/leave/balances">
+                    <i class="fas fa-chart-pie"></i>
+                    <span class="nav-text">Leave Balances</span>
+                </a>
+            </li>
+
+            <!-- Finance Executive -->
+            <li sec:authorize="hasRole('FINANCE_EXECUTIVE')">
+                <a href="/payroll">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span class="nav-text">Payroll Engine</span>
+                </a>
+            </li>
+
+            <!-- IT Officer -->
+            <li sec:authorize="hasRole('IT_OFFICER')">
+                <a href="/audit-logs">
+                    <i class="fas fa-shield-halved"></i>
+                    <span class="nav-text">System Audit Logs</span>
+                </a>
+            </li>
+
+            <!-- Standard Employee -->
+            <li sec:authorize="hasRole('EMPLOYEE')">
+                <a href="/my-profile">
+                    <i class="fas fa-id-badge"></i>
+                    <span class="nav-text">My Profile</span>
+                </a>
+            </li>
+            <li sec:authorize="hasRole('EMPLOYEE')">
+                <a href="/leave/apply">
+                    <i class="fas fa-mug-hot"></i>
+                    <span class="nav-text">Leave Requests</span>
+                </a>
+            </li>
+            <li sec:authorize="hasRole('EMPLOYEE')">
+                <a href="/my-payslips">
+                    <i class="fas fa-file-pdf"></i>
+                    <span class="nav-text">My Payslips</span>
+                </a>
+            </li>
+
+            <!-- Spacer to push Logout to bottom -->
+            <li style="margin-top: auto; border-top: 1px solid #1f2937;">
+                <form th:action="@{/logout}" method="post" style="margin: 0;">
+                    <button type="submit" class="logout-btn" style="color: #ef4444;">
+                        <i class="fas fa-arrow-right-from-bracket"></i>
+                        <span class="nav-text">Sign Out</span>
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </div>
+
+    <!-- 4. JavaScript for the Toggle Mechanics -->
+    <script>
+        function applySidebarState() {
+            const sidebar = document.getElementById('main-sidebar');
+            // Check local storage to see if they previously closed it
+            const isCollapsed = localStorage.getItem('sidebarState') === 'collapsed';
+
+            if (isCollapsed) {
+                sidebar.classList.add('collapsed');
+                document.body.style.marginLeft = '80px';
+            } else {
+                sidebar.classList.remove('collapsed');
+                document.body.style.marginLeft = '260px';
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('main-sidebar');
+            sidebar.classList.toggle('collapsed');
+
+            // Save their preference so it remembers on the next page load!
+            if (sidebar.classList.contains('collapsed')) {
+                localStorage.setItem('sidebarState', 'collapsed');
+                document.body.style.marginLeft = '80px';
+            } else {
+                localStorage.setItem('sidebarState', 'expanded');
+                document.body.style.marginLeft = '260px';
+            }
+        }
+
+        // Run instantly when the page loads
+        applySidebarState();
+    </script>
+</div>
+
+</body>
+</html>

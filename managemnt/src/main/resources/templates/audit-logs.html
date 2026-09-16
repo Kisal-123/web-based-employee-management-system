@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>System Audit Logs — SmartStaffPro</title>
+    <!-- Import the modern Inter font to match the dashboard -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; margin: 0; margin-left: 250px; padding: 40px; color: #1f2937; }
+
+        /* Modern Glass Card styling */
+        .glass-card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); max-width: 1100px; margin: 0 auto; }
+
+        h2 { color: #1f2937; margin-top: 0; border-bottom: 2px solid #f3f4f6; padding-bottom: 15px; margin-bottom: 20px; font-weight: 700;}
+
+        /* Modern Table Styling */
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #f3f4f6; }
+        th { background-color: #f9fafb; font-weight: 600; color: #6b7280; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+
+        /* Dashboard-style Badge */
+        .badge-blue { background: #e0f2fe; color: #0284c7; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+
+        .empty-state { text-align: center; color: #6b7280; padding: 30px !important; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments :: sidebar}"></div>
+
+<div class="glass-card">
+    <h2>System Audit Logs (Tamper-Evident)</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Timestamp</th>
+            <th>User Account</th>
+            <th>System Action</th>
+            <th>Details</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="log : ${logs}">
+            <td th:text="${#temporals.format(log.timestamp, 'yyyy-MM-dd HH:mm:ss')}"></td>
+            <td th:text="${log.username}" style="font-weight: 600;"></td>
+            <td><span class="badge-blue" th:text="${log.action}"></span></td>
+            <td th:text="${log.details}"></td>
+        </tr>
+        <!-- Your excellent empty-state logic! -->
+        <tr th:if="${#lists.isEmpty(logs)}">
+            <td colspan="4" class="empty-state">No system actions recorded yet.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

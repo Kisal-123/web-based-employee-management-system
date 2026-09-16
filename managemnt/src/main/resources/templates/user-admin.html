@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>User Administration — SmartStaffPro</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; margin-left: 250px; padding: 30px; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #333; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #343a40; color: white; }
+
+        select { padding: 6px; border-radius: 4px; border: 1px solid #ccc; font-size: 13px; }
+        button { background-color: #ffc107; color: #333; border: none; padding: 7px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px;}
+        button:hover { background-color: #e0a800; }
+        .alert-success { color: #155724; background-color: #d4edda; padding: 10px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #c3e6cb; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments :: sidebar}"></div>
+
+<div class="container">
+    <h2>User Administration & Role Management</h2>
+
+    <div th:if="${param.success}" class="alert-success">User role updated successfully!</div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email Address</th>
+            <th>Current Role</th>
+            <th>Update Role</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="user : ${users}">
+            <td th:text="${user.id}"></td>
+            <td th:text="${user.username}" style="font-weight: bold;"></td>
+            <td th:text="${user.email}"></td>
+            <td th:text="${user.role}" style="color: #0056b3; font-weight: bold;"></td>
+            <td>
+                <!-- A mini-form for each user to change their role -->
+                <form th:action="@{/admin/users/update-role/{id}(id=${user.id})}" method="post" style="display: flex; gap: 5px;">
+                    <select name="role" required>
+                        <option value="ROLE_EMPLOYEE" th:selected="${user.role == 'ROLE_EMPLOYEE'}">Employee</option>
+                        <option value="ROLE_HR_MANAGER" th:selected="${user.role == 'ROLE_HR_MANAGER'}">HR Manager</option>
+                        <option value="ROLE_OPERATIONS_MANAGER" th:selected="${user.role == 'ROLE_OPERATIONS_MANAGER'}">Operations Manager</option>
+                        <option value="ROLE_FINANCE_EXECUTIVE" th:selected="${user.role == 'ROLE_FINANCE_EXECUTIVE'}">Finance Executive</option>
+                        <option value="ROLE_IT_OFFICER" th:selected="${user.role == 'ROLE_IT_OFFICER'}">IT Officer</option>
+                    </select>
+                    <button type="submit">Update</button>
+                </form>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(users)}">
+            <td colspan="5" style="text-align: center; color: #777;">No users found.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

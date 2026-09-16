@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Apply for Leave</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0;margin-left: 250px; padding: 40px; display: flex; flex-direction: column; align-items: center; gap: 20px;}
+    .panel { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
+    h2 { color: #333; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; font-size: 14px; }
+    input, select, textarea { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
+    button { width: 100%; padding: 12px; background-color: #0056b3; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    .alert-success { color: #155724; background-color: #d4edda; padding: 10px; border-radius: 5px; margin-bottom: 20px; text-align: center; border: 1px solid #c3e6cb; }
+
+    /* New Table Styles */
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; font-size: 14px; }
+    th { background-color: #6c757d; color: white; }
+    .badge { padding: 5px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; color: white; }
+    .badge-pending { background-color: #ffc107; color: #333; }
+    .badge-approved { background-color: #28a745; }
+    .badge-rejected { background-color: #dc3545; }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments :: sidebar}"></div>
+<!-- Top Panel: The Application Form & Balances -->
+<div class="panel">
+  <h2>Apply for Leave</h2>
+
+  <div th:if="${param.success}" class="alert-success">Leave request submitted successfully!</div>
+
+  <!-- Error if HR record is missing -->
+  <div th:if="${employee == null}" style="text-align: center; color: #dc3545; padding: 20px;">
+    <p>Your login email does not match any official HR records. Please contact the HR Manager to link your account.</p>
+  </div>
+
+  <div th:if="${employee != null}">
+    <!-- NEW: Real-Time Leave Balances Widget -->
+    <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+      <div style="flex: 1; background-color: #e2e3e5; padding: 15px; border-radius: 8px; text-align: center;">
+        <span style="display: block; color: #383d41; font-weight: bold; font-size: 12px; text-transform: uppercase;">Annual Leave Remaining</span>
+        <span style="display: block; font-size: 24px; font-weight: bold; color: #0056b3;" th:text="${balances['annual']} + ' Days'"></span>
+      </div>
+      <div style="flex: 1; background-color: #e2e3e5; padding: 15px; border-radius: 8px; text-align: center;">
+        <span style="display: block; color: #383d41; font-weight: bold; font-size: 12px; text-transform: uppercase;">Casual Leave Remaining</span>
+        <span style="display: block; font-size: 24px; font-weight: bold; color: #17a2b8;" th:text="${balances['casual']} + ' Days'"></span>
+      </div>
+    </div>
+
+    <!-- The Form -->
+    <form th:action="@{/leave/submit}" th:object="${leaveRequest}" method="post">
+      <!-- Secretly pass the logged-in employee's ID so they can't change it -->
+      <input type="hidden" th:field="*{employee.id}" />
+
+      <div class="form-group">
+        <label>Employee Name (Locked):</label>
+        <input type="text" th:value="${employee.firstName + ' ' + employee.lastName}" disabled style="background-color: #e9ecef; cursor: not-allowed; color: #666;"/>
+      </div>
+
+      <div class="form-group">
+        <label>Leave Type:</label>
+        <select th:field="*{leaveType}" required>
+          <option value="ANNUAL">Annual Leave</option>
+          <option value="CASUAL">Casual Leave</option>
+          <option value="MATERNITY">Maternity Leave</option>
+          <option value="MEDICAL">Medical Leave</option>
+          <option value="UNPAID">Unpaid Leave (No-Pay)</option>
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <div class="form-group" style="flex: 1;"><label>Start Date:</label><input type="date" th:field="*{startDate}" required/></div>
+        <div class="form-group" style="flex: 1;"><label>End Date:</label><input type="date" th:field="*{endDate}" required/></div>
+      </div>
+
+      <div class="form-group">
+        <label>Reason for Leave:</label>
+        <textarea th:field="*{reason}" rows="3" required></textarea>
+      </div>
+
+      <button type="submit">Submit Request</button>
+    </form>
+  </div>
+</div>
+
+<!-- Bottom Panel: The Employee's Leave History -->
+<div class="panel">
+  <h2>My Leave History</h2>
+  <table>
+    <thead>
+    <tr>
+      <th>Type</th>
+      <th>Dates</th>
+      <th>Reason</th>
+      <th>Status</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="leave : ${myLeaves}">
+      <td th:text="${leave.leaveType}"></td>
+      <td th:text="${leave.startDate + ' to ' + leave.endDate}"></td>
+      <td th:text="${leave.reason}"></td>
+      <td>
+        <!-- Displays the exact status chosen by the manager -->
+        <span th:if="${leave.status == 'PENDING'}" class="badge badge-pending">PENDING</span>
+        <span th:if="${leave.status == 'APPROVED'}" class="badge badge-approved">APPROVED</span>
+        <span th:if="${leave.status == 'REJECTED'}" class="badge badge-rejected">REJECTED</span>
+        <span th:if="${leave.status == 'PROCESSED_UNPAID'}" class="badge" style="background-color: #6f42c1;">DEDUCTED IN PAYROLL</span>
+      </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(myLeaves)}">
+      <td colspan="4" style="text-align: center; color: #777;">You have no past leave requests.</td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>

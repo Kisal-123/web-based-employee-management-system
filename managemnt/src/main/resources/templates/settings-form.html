@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Global Configurations — SmartStaffPro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; margin: 0; margin-left: 250px; padding: 40px; color: #1f2937; }
+
+        /* ADDED: margin: 0 auto; pushes the container exactly to the center */
+        .config-container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .section-title { grid-column: span 2; margin-top: 20px; margin-bottom: 10px; color: #4f46e5; border-bottom: 2px solid #f3f4f6; padding-bottom: 5px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
+        input { width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 10px; box-sizing: border-box; }
+        .btn-submit { background-color: #4f46e5; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; margin-top: 20px; width: 200px; }
+        .alert-success { background-color: #dcfce3; color: #166534; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-weight: 600; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments :: sidebar}"></div>
+
+<div class="config-container">
+    <h2>System Variables & Engine Settings</h2>
+    <p style="color: #6b7280; margin-bottom: 30px;">Warning: Changes made here immediately affect the Payroll engine calculations and Leave limits company-wide.</p>
+
+    <div th:if="${param.success}" class="alert-success">
+        Configurations successfully updated across the enterprise!
+    </div>
+
+    <form th:action="@{/settings/update}" th:object="${settings}" method="post" class="config-grid">
+
+        <h3 class="section-title">Statutory Payroll Deductions (%)</h3>
+        <div class="form-group">
+            <label>Employee EPF Deduction (%)</label>
+            <input type="number" step="0.1" th:field="*{epfEmployeePercentage}" required>
+        </div>
+        <div class="form-group">
+            <label>Employer EPF Contribution (%)</label>
+            <input type="number" step="0.1" th:field="*{epfEmployerPercentage}" required>
+        </div>
+        <div class="form-group">
+            <label>Employer ETF Contribution (%)</label>
+            <input type="number" step="0.1" th:field="*{etfEmployerPercentage}" required>
+        </div>
+        <div></div> <!-- Blank spacer -->
+
+        <h3 class="section-title">Global Leave Limits (Days/Year)</h3>
+        <div class="form-group">
+            <label>Annual Leave Quota</label>
+            <input type="number" th:field="*{annualLeaveLimit}" required>
+        </div>
+        <div class="form-group">
+            <label>Casual Leave Quota</label>
+            <input type="number" th:field="*{casualLeaveLimit}" required>
+        </div>
+        <div class="form-group">
+            <label>Medical Leave Quota</label>
+            <input type="number" th:field="*{medicalLeaveLimit}" required>
+        </div>
+
+        <div style="grid-column: span 2; display: flex; justify-content: flex-end;">
+            <button type="submit" class="btn-submit">Apply Changes</button>
+        </div>
+    </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Profile — SmartStaffPro</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0;margin-left: 250px; padding: 40px; display: flex; justify-content: center; }
+        .card-container { background: white; padding: 30px 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
+        h2 { color: #333; margin-top: 0; text-align: center; margin-bottom: 25px; border-bottom: 2px solid #f4f7f6; padding-bottom: 10px; }
+        .detail-row { display: flex; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 8px;}
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { font-weight: bold; width: 40%; color: #555; }
+        .detail-value { width: 60%; color: #333; }
+        .btn-back { display: block; width: 100%; padding: 12px; background-color: #6c757d; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; margin-top: 15px; text-align: center; text-decoration: none; box-sizing: border-box; }
+        .btn-back:hover { background-color: #5a6268; }
+        .btn-edit { display: block; width: 100%; padding: 12px; background-color: #ffc107; color: #333; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; margin-top: 25px; text-align: center; text-decoration: none; box-sizing: border-box; }
+        .btn-edit:hover { background-color: #e0a800; }
+        .status-badge { background-color: #d4edda; color: #155724; padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 12px; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments :: sidebar}"></div>
+<div class="card-container">
+    <h2>Employee Profile</h2>
+
+    <div class="detail-row">
+        <div class="detail-label">Employee ID:</div>
+        <div class="detail-value" th:text="${employee.id}"></div>
+    </div>
+
+    <div class="detail-row">
+        <div class="detail-label">Full Name:</div>
+        <!-- Thymeleaf allows us to combine the first and last name easily -->
+        <div class="detail-value" th:text="${employee.firstName + ' ' + employee.lastName}"></div>
+    </div>
+
+    <div class="detail-row">
+        <div class="detail-label">Email Address:</div>
+        <div class="detail-value" th:text="${employee.email}"></div>
+    </div>
+
+    <div class="detail-row">
+        <div class="detail-label">Phone Number:</div>
+        <div class="detail-value" th:text="${employee.phone}"></div>
+    </div>
+
+    <div class="detail-row">
+        <div class="detail-label">Department:</div>
+        <div class="detail-value" th:text="${employee.department}"></div>
+    </div>
+
+    <div class="detail-row">
+        <div class="detail-label">Designation:</div>
+        <div class="detail-value" th:text="${employee.designation}"></div>
+    </div>
+
+    <div class="detail-row">
+        <div class="detail-label">Hire Date:</div>
+        <div class="detail-value" th:text="${employee.hireDate}"></div>
+    </div>
+
+    <div class="detail-row">
+        <div class="detail-label">Status:</div>
+        <div class="detail-value">
+            <span class="status-badge" th:text="${employee.status}"></span>
+        </div>
+    </div>
+
+    <!-- Quick link to jump straight into editing this specific profile -->
+    <a th:href="@{/employees/edit/{id}(id=${employee.id})}" class="btn-edit">Edit Profile</a>
+    <!-- OFFBOARDING FORM -->
+    <form th:action="@{/employees/offboard/{id}(id=${employee.id})}" method="post"
+          onsubmit="return confirm('Are you sure you want to offboard this employee? This will change their status to TERMINATED.');">
+        <button type="submit" style="display: block; width: 100%; padding: 12px; background-color: #dc3545; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; margin-top: 15px; cursor: pointer;">
+            Offboard Employee
+        </button>
+    </form>
+
+    <a href="/employees" class="btn-back">Back to Directory</a>
+</div>
+
+</body>
+</html>

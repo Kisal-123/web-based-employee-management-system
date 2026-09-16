@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Payslips — SmartStaffPro</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; margin-left: 250px; padding: 40px; display: flex; justify-content: center; }
+        .panel { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 900px; }
+        h2 { color: #333; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #6c757d; color: white; }
+        .money { font-family: monospace; font-weight: bold; color: #28a745; }
+        .btn-download { background-color: #17a2b8; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .btn-download:hover { background-color: #138496; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments :: sidebar}"></div>
+
+<div class="panel">
+    <h2>My Payslip History</h2>
+
+    <div th:if="${payslips == null}" style="text-align: center; color: #dc3545; padding: 20px;">
+        <p>Your login email does not match any official HR records. Please contact the HR Manager.</p>
+    </div>
+
+    <table th:if="${payslips != null}">
+        <thead>
+        <tr>
+            <th>Pay Period</th>
+            <th>Basic Salary</th>
+            <th>Gross Salary</th>
+            <th>Total Deductions</th>
+            <th>Net Take-Home</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="pay : ${payslips}">
+            <td th:text="${pay.payPeriod}" style="font-weight: bold;"></td>
+            <td class="money" th:text="${'Rs. ' + pay.basicSalary}"></td>
+            <td class="money" style="color: #0056b3;" th:text="${'Rs. ' + pay.grossSalary}"></td>
+            <!-- Calculate total deductions for a cleaner view -->
+            <td style="color: #dc3545; font-family: monospace; font-weight: bold;" th:text="${'- Rs. ' + (pay.epfDeduction + pay.apitTax + pay.deductions)}"></td>
+            <td class="money" style="font-size: 16px;" th:text="${'Rs. ' + pay.netSalary}"></td>
+            <td>
+                <!-- Reuses the exact same PDF generator we built earlier! -->
+                <a th:href="@{/payroll/download/{id}(id=${pay.id})}" class="btn-download">Download PDF</a>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(payslips)}">
+            <td colspan="6" style="text-align: center; color: #777;">No payslips have been generated for you yet.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

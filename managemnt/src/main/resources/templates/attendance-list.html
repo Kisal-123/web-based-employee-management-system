@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Attendance Logs — SmartStaffPro</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0;margin-left: 250px; padding: 20px; }
+    .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    h2 { color: #333; margin-top: 0; }
+
+    /* Clock-In Form Styling */
+    .clock-in-panel { background-color: #e9ecef; padding: 20px; border-radius: 8px; margin-bottom: 25px; display: flex; gap: 15px; align-items: flex-end; }
+    .form-group { flex: 1; display: flex; flex-direction: column; }
+    label { margin-bottom: 5px; font-weight: bold; color: #555; font-size: 14px; }
+    select { padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 15px; }
+    .btn-clock-in { background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; height: 40px; }
+    .btn-clock-in:hover { background-color: #218838; }
+
+    /* Table Styling */
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+    th { background-color: #0056b3; color: white; }
+    tr:hover { background-color: #f1f1f1; }
+
+    .btn-clock-out { background-color: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    .btn-clock-out:hover { background-color: #c82333; }
+    .ot-highlight { color: #d35400; font-weight: bold; }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments :: sidebar}"></div>
+<div class="container">
+
+  <!-- UPDATED: Added the flexbox container for the title and the Download button -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2 style="margin: 0;">Daily Attendance & Overtime Logs</h2>
+    <a href="/attendance/export" style="background-color: #6c757d; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; font-weight: bold;">Download Excel Report</a>
+  </div>
+
+  <!-- Panel to simulate an employee clocking in -->
+  <div class="clock-in-panel">
+    <form th:action="@{/attendance/clock-in}" method="post" style="display: flex; gap: 15px; width: 100%;">
+      <div class="form-group">
+        <label>Select Employee to Clock In:</label>
+        <select name="employeeId" required>
+          <option value="" disabled selected>-- Select an Employee --</option>
+          <!-- Only show employees who are not terminated -->
+          <option th:each="emp : ${employees}"
+                  th:if="${emp.status != 'TERMINATED'}"
+                  th:value="${emp.id}"
+                  th:text="${emp.firstName + ' ' + emp.lastName + ' (' + emp.designation + ')'}">
+          </option>
+        </select>
+      </div>
+      <button type="submit" class="btn-clock-in">Record Clock In</button>
+    </form>
+  </div>
+
+  <table>
+    <thead>
+    <tr>
+      <th>Date</th>
+      <th>Employee Name</th>
+      <th>Clock In</th>
+      <th>Clock Out</th>
+      <th>Overtime (Hours)</th>
+      <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="log : ${attendances}">
+      <td th:text="${log.workDate}">2026-09-03</td>
+      <td th:text="${log.employee.firstName + ' ' + log.employee.lastName}">John Doe</td>
+      <td th:text="${log.clockInTime}">08:00</td>
+
+      <!-- Display Clock Out time if it exists, otherwise show pending -->
+      <td th:text="${log.clockOutTime != null ? log.clockOutTime : 'Working...'}">17:00</td>
+
+      <!-- Display Overtime. Highlight it if it's greater than 0 -->
+      <td th:text="${log.overtimeHours}" th:class="${log.overtimeHours > 0 ? 'ot-highlight' : ''}">0.0</td>
+
+      <td>
+        <!-- If they haven't clocked out yet, show the Clock Out button -->
+        <form th:if="${log.clockOutTime == null}" th:action="@{/attendance/clock-out/{id}(id=${log.id})}" method="post">
+          <button type="submit" class="btn-clock-out">Clock Out</button>
+        </form>
+        <!-- If they have clocked out, show a completed badge -->
+        <span th:if="${log.clockOutTime != null}" style="color: #28a745; font-weight: bold;">Shift Complete</span>
+      </td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(attendances)}">
+      <td colspan="6" style="text-align: center; color: #777;">No attendance logs found for today.</td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>

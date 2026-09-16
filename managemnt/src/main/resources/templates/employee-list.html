@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Directory — SmartStaffPro</title>
+    <style>
+        /* UPDATED: Added margin-left: 250px to make room for the fixed sidebar */
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; margin-left: 250px; padding: 20px; }
+
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #333; margin-top: 0; }
+        .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .btn-add { background-color: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .btn-add:hover { background-color: #218838; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #0056b3; color: white; }
+        tr:hover { background-color: #f1f1f1; }
+    </style>
+</head>
+<body>
+
+<!-- ADDED: This line injects your new side menu right here -->
+<div th:replace="~{fragments :: sidebar}"></div>
+
+<div class="container">
+    <div class="header-actions">
+        <h2>Employee Directory</h2>
+        <!-- NEW EXPORT BUTTON -->
+        <a href="/employees/export" style="background-color: #6c757d; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-right: 10px;">Download Excel Report</a>
+        <a href="/employees/new" class="btn-add">+ Add New Employee</a>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Department</th>
+            <th>Designation</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="employee : ${employees}">
+            <td th:text="${employee.id}">1</td>
+            <td th:text="${employee.firstName}">John</td>
+            <td th:text="${employee.lastName}">Doe</td>
+            <td th:text="${employee.department}">IT</td>
+            <td th:text="${employee.designation}">Developer</td>
+            <!-- Included the dynamic red/green coloring for the status -->
+            <td th:text="${employee.status}"
+                th:style="${employee.status == 'ACTIVE' ? 'color: #155724; font-weight: bold;' : 'color: #dc3545; font-weight: bold;'}">
+                ACTIVE
+            </td>
+            <td>
+                <a th:href="@{/employees/view/{id}(id=${employee.id})}" style="color: #0056b3; text-decoration: none;">View</a> |
+                <a th:href="@{/employees/edit/{id}(id=${employee.id})}" style="color: #ffc107; text-decoration: none;">Edit</a>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(employees)}">
+            <td colspan="7" style="text-align: center; color: #777;">No employees found in the system.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Manager Leave Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0;margin-left: 250px; padding: 40px; display: flex; justify-content: center;}
+        .panel { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 900px; }
+        h2 { color: #333; margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; font-size: 14px; }
+        th { background-color: #6c757d; color: white; }
+        .badge { padding: 5px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; color: white; }
+        .badge-pending { background-color: #ffc107; color: #333; }
+        .badge-approved { background-color: #28a745; }
+        .badge-rejected { background-color: #dc3545; }
+        .action-form { display: inline-block; }
+        .action-btn { padding: 6px 12px; font-size: 12px; margin: 0 2px; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;}
+        .btn-approve { background-color: #28a745; }
+        .btn-reject { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments :: sidebar}"></div>
+<div class="panel">
+    <h2>Manager Review Dashboard</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Employee</th>
+            <th>Type</th>
+            <th>Dates</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="leave : ${allLeaves}">
+            <td th:text="${leave.employee.firstName + ' ' + leave.employee.lastName}"></td>
+            <td th:text="${leave.leaveType}"></td>
+            <td th:text="${leave.startDate + ' to ' + leave.endDate}"></td>
+            <td th:text="${leave.reason}"></td>
+            <td>
+                <span th:if="${leave.status == 'PENDING'}" class="badge badge-pending">PENDING</span>
+                <span th:if="${leave.status == 'APPROVED'}" class="badge badge-approved">APPROVED</span>
+                <span th:if="${leave.status == 'REJECTED'}" class="badge badge-rejected">REJECTED</span>
+                <span th:if="${leave.status == 'PROCESSED_UNPAID'}" class="badge" style="background-color: #6f42c1;">DEDUCTED IN PAYROLL</span>
+            </td>
+            <td>
+                <div th:if="${leave.status == 'PENDING'}">
+                    <form th:action="@{/leave/update/{id}(id=${leave.id})}" method="post" class="action-form">
+                        <input type="hidden" name="status" value="APPROVED"/>
+                        <button type="submit" class="action-btn btn-approve">Approve</button>
+                    </form>
+                    <form th:action="@{/leave/update/{id}(id=${leave.id})}" method="post" class="action-form">
+                        <input type="hidden" name="status" value="REJECTED"/>
+                        <button type="submit" class="action-btn btn-reject">Reject</button>
+                    </form>
+                </div>
+                <span th:if="${leave.status != 'PENDING'}" style="color: #777; font-size: 12px;">Reviewed</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
