@@ -3,6 +3,7 @@ package com.emp.management.payroll.controller;
 import com.emp.management.employeerecords.model.Employee;
 import com.emp.management.employeerecords.service.EmployeeService;
 import com.emp.management.payroll.model.Payroll;
+import com.emp.management.payroll.repository.PayrollRepository;
 import com.emp.management.payroll.service.PayrollService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -19,6 +20,9 @@ import com.emp.management.useraccess.service.AuditLogService;
 import java.security.Principal;
 import java.io.File;
 import java.nio.file.Files;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @Controller
 public class PayrollController {
@@ -37,6 +41,9 @@ public class PayrollController {
 
     @Autowired
     private PayrollPdfService payrollPdfService;
+
+    @Autowired
+    private PayrollRepository payrollRepository;
 
     @GetMapping("/payroll")
     public String showPayrollDashboard(Model model) {
@@ -130,5 +137,43 @@ public class PayrollController {
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(pdfBytes);
+    }
+
+    @GetMapping("/payroll/summary")
+    public String viewDepartmentalPayrollSummary(
+            @RequestParam(value = "department", required = false) String departmentFilter,
+            @RequestParam(value = "period", required = false) String periodFilter,
+            Model model) {
+
+        List<Payroll> allPayrolls = payrollRepository.findAll();
+        Map<String, Double> departmentCosts = new HashMap<>();
+        double totalOrganizationCost = 0.0;
+
+        for (Payroll payroll : allPayrolls) {
+            String dept = payroll.getEmployee().getDepartment();
+            String payPeriod = payroll.getPayPeriod();
+
+            // --- PBI-18: FILTER DRILL-DOWN LOGIC ---
+            // 1. Skip if it doesn't match the selected Department
+            if (departmentFilter != null && !departmentFilter.isEmpty() && !dept.equalsIgnoreCase(departmentFilter)) {
+                continue;
+            }
+            // 2. Skip if it doesn't match the selected Date Range / Period
+            if (periodFilter != null && !periodFilter.isEmpty() && !payPeriod.equalsIgnoreCase(periodFilter)) {
+                continue;
+            }
+
+            double netSalary = payroll.getNetSalary();
+            departmentCosts.put(dept, departmentCosts.getOrDefault(dept, 0.0) + netSalary);
+            totalOrganizationCost += netSalary;
+        }
+
+        // Send data AND the selected filters back to the HTML
+        model.addAttribute("departmentCosts", departmentCosts);
+        model.addAttribute("totalOrganizationCost", totalOrganizationCost);
+        model.addAttribute("selectedDepartment", departmentFilter);
+        model.addAttribute("selectedPeriod", periodFilter);
+
+        return "payroll-summary";
     }
 }
